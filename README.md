@@ -165,6 +165,21 @@ For submission, run both suites, retain these generated artifacts outside Git
 or attach them to the GitHub repository release, and optionally record the
 physical device during the mobile run.
 
+## GitHub Actions
+
+The workflow in `.github/workflows/test.yml` runs two independent jobs on
+pushes to `main` or `master`, pull requests, and manual dispatches:
+
+1. **API tests:** installs dependencies, checks TypeScript, and runs the
+   Playwright API suite.
+2. **Android tests:** starts an Android 35 emulator and runs the shared
+   WebdriverIO/Appium mobile suite.
+
+Each job uploads its execution evidence from the `artifacts/` directory even
+when a test fails. In GitHub, open the workflow run and download
+`api-test-evidence-*` or `android-test-evidence-*` from the **Artifacts**
+section. Artifacts are retained for 14 days.
+
 ## Troubleshooting
 
 - Run `npm run check:android` to diagnose Android prerequisites.

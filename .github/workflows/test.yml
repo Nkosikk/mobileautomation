@@ -1,0 +1,119 @@
+name: Mobile and API tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+      - name: Run API tests
+        run: npm run test:api
+        env:
+          CI: true
+
+      - name: Upload API evidence
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: api-test-evidence-${{ github.run_attempt }}
+          path: |
+            artifacts/junit/api/
+            artifacts/playwright-report/
+            artifacts/playwright-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  android:
+    name: Android tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download Native Demo App
+        run: npm run download:apps
+
+      - name: Enable KVM access
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Android tests
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_DEVICE_NAME: GitHub Actions Emulator
+          CI: true
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: >-
+            -no-window
+            -gpu swiftshader_indirect
+            -no-snapshot
+            -noaudio
+            -no-boot-anim
+          script: npm run test:mobile:android
+
+      - name: Upload Android evidence
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: android-test-evidence-${{ github.run_attempt }}
+          path: |
+            artifacts/junit/mobile/
+            artifacts/logs/
+            artifacts/screenshots/
+          if-no-files-found: warn
+          retention-days: 14

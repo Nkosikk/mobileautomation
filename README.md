@@ -160,6 +160,8 @@ The framework generates evidence under `artifacts/`:
   `artifacts/screenshots/`
 - API JUnit XML: `artifacts/junit/api/results.xml`
 - API HTML report: `artifacts/playwright-report/index.html`
+- API Extent report: `artifacts/extent/api/index.html`
+- Android Extent report: `artifacts/extent/android/index.html`
 
 For submission, run both suites, retain these generated artifacts outside Git
 or attach them to the GitHub repository release, and optionally record the
@@ -175,10 +177,12 @@ pushes to `main` or `master`, pull requests, and manual dispatches:
 2. **Android tests:** starts an Android 35 emulator and runs the shared
    WebdriverIO/Appium mobile suite.
 
-Each job uploads its execution evidence from the `artifacts/` directory even
-when a test fails. In GitHub, open the workflow run and download
+Each job converts its JUnit XML into an official ExtentReports Spark HTML
+report and uploads all execution evidence from the `artifacts/` directory,
+even when a test fails. In GitHub, open the workflow run and download
 `api-test-evidence-*` or `android-test-evidence-*` from the **Artifacts**
-section. Artifacts are retained for 14 days.
+section. Open the corresponding `extent/*/index.html` file after extracting
+the artifact. Artifacts are retained for 14 days.
 
 ## Troubleshooting
 

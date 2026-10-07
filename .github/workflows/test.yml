@@ -31,6 +31,13 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
       - name: Install dependencies
         run: npm ci
 
@@ -42,6 +49,14 @@ jobs:
         env:
           CI: true
 
+      - name: Generate API Extent report
+        if: always()
+        run: >-
+          mvn --batch-mode --quiet
+          --file tools/extent-report/pom.xml
+          compile exec:java
+          -Dexec.args="artifacts/extent/api/index.html API_Tests artifacts/junit/api"
+
       - name: Upload API evidence
         if: always()
         uses: actions/upload-artifact@v5
@@ -49,6 +64,7 @@ jobs:
           name: api-test-evidence-${{ github.run_attempt }}
           path: |
             artifacts/junit/api/
+            artifacts/extent/api/
             artifacts/playwright-report/
             artifacts/playwright-results/
           if-no-files-found: warn
@@ -106,6 +122,14 @@ jobs:
             -no-boot-anim
           script: npm run test:mobile:android
 
+      - name: Generate Android Extent report
+        if: always()
+        run: >-
+          mvn --batch-mode --quiet
+          --file tools/extent-report/pom.xml
+          compile exec:java
+          -Dexec.args="artifacts/extent/android/index.html Android_Tests artifacts/junit/mobile"
+
       - name: Upload Android evidence
         if: always()
         uses: actions/upload-artifact@v5
@@ -113,6 +137,7 @@ jobs:
           name: android-test-evidence-${{ github.run_attempt }}
           path: |
             artifacts/junit/mobile/
+            artifacts/extent/android/
             artifacts/logs/
             artifacts/screenshots/
           if-no-files-found: warn

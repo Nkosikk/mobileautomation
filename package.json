@@ -1,0 +1,45 @@
+{
+  "name": "mobile-api-test-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WebdriverIO/Appium mobile tests and Playwright REST API tests",
+  "type": "module",
+  "scripts": {
+    "download:apps": "node scripts/download-demo-app.mjs",
+    "check:android": "appium driver doctor uiautomator2",
+    "setup:ios": "appium driver install xcuitest",
+    "test": "npm run test:api",
+    "test:api": "playwright test --config config/playwright.api.config.ts",
+    "test:mobile": "npm run test:mobile:android",
+    "test:mobile:android": "cross-env PLATFORM=android wdio run config/wdio.conf.ts",
+    "test:mobile:ios": "cross-env PLATFORM=ios wdio run config/wdio.conf.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20 <24"
+  },
+  "overrides": {
+    "axios": "1.20.0",
+    "morgan": "1.12.1",
+    "proxy-addr": "2.0.8",
+    "sharp": "0.35.5",
+    "shell-quote": "1.12.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "^24.7.1",
+    "@wdio/appium-service": "10.0.1",
+    "@wdio/cli": "10.0.1",
+    "@wdio/globals": "10.0.1",
+    "@wdio/junit-reporter": "10.0.1",
+    "@wdio/local-runner": "10.0.1",
+    "@wdio/mocha-framework": "10.0.1",
+    "@wdio/spec-reporter": "10.0.1",
+    "appium": "3.8.0",
+    "appium-uiautomator2-driver": "^8.7.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "typescript": "7.0.2",
+    "webdriverio": "10.0.1"
+  }
+}
